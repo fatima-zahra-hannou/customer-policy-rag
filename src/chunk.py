@@ -2,18 +2,10 @@
 
 import json
 import re
-from pathlib import Path
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-ROOT_DIR = Path(__file__).resolve().parent.parent
-IN_FILE = ROOT_DIR / "data" / "processed" / "pages.jsonl"
-OUT_FILE = ROOT_DIR / "data" / "processed" / "chunks.jsonl"
-
-CHUNK_SIZE = 800
-CHUNK_OVERLAP = 300
-MIN_CHUNK_LENGTH = 100
-BODY_MARKER = "Préambule"
+from config import settings
 
 TITLE_PATTERN = re.compile(r"^(Article\s+\d+\s*[-–].+|\d+(?:\.\d+)+\s+.+)$", re.MULTILINE)
 
@@ -30,7 +22,7 @@ def load_pages():
     full_text = ""
     page_starts = []
 
-    with IN_FILE.open(encoding="utf-8") as f:
+    with settings.pages_file.open(encoding="utf-8") as f:
         for line in f:
             page = json.loads(line)
             page_starts.append((len(full_text), page["page"], page["doc_id"]))
@@ -46,7 +38,7 @@ def skip_front_matter(full_text, page_starts):
     contents matches TITLE_PATTERN and would create an empty section.
     TODO: replace with a layout-aware parser to support arbitrary documents.
     """
-    body_start = full_text.find(BODY_MARKER)
+    body_start = full_text.find(settings.body_marker)
     if body_start <= 0:
         return full_text, page_starts
 
@@ -74,8 +66,8 @@ def main():
     print(f"{len(titles)} titles detected")
 
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=CHUNK_SIZE,
-        chunk_overlap=CHUNK_OVERLAP,
+        chunk_size=settings.chunk_size,
+        chunk_overlap=settings.chunk_overlap,
         separators=["\n\n", ". ", "\n", " ", ""],
         add_start_index=True,
     )
@@ -89,7 +81,7 @@ def main():
         section_text = full_text[start:end]
 
         for doc in splitter.create_documents([section_text]):
-            if len(doc.page_content.strip()) < MIN_CHUNK_LENGTH:
+            if len(doc.page_content.strip()) < settings.min_chunk_length:
                 continue
 
             offset = start + doc.metadata["start_index"]
@@ -104,8 +96,8 @@ def main():
                 }
             )
 
-    OUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with OUT_FILE.open("w", encoding="utf-8") as f:
+    settings.chunks_file.parent.mkdir(parents=True, exist_ok=True)
+    with settings.chunks_file.open("w", encoding="utf-8") as f:
         for chunk in chunks:
             f.write(json.dumps(chunk, ensure_ascii=False) + "\n")
 
