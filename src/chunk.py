@@ -1,11 +1,14 @@
 """Split pages into chunks, respecting article boundaries."""
 
 import json
+import logging
 import re
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from config import settings
+
+logger = logging.getLogger(__name__)
 
 TITLE_PATTERN = re.compile(r"^(Article\s+\d+\s*[-–].+|\d+(?:\.\d+)+\s+.+)$", re.MULTILINE)
 
@@ -40,6 +43,7 @@ def skip_front_matter(full_text, page_starts):
     """
     body_start = full_text.find(settings.body_marker)
     if body_start <= 0:
+        logger.warning("body marker '%s' not found, keeping full text", settings.body_marker)
         return full_text, page_starts
 
     shifted = [(max(0, pos - body_start), page, doc_id) for pos, page, doc_id in page_starts]
@@ -63,7 +67,7 @@ def main():
     full_text, page_starts = skip_front_matter(full_text, page_starts)
 
     titles = [(m.start(), m.group(0).strip()) for m in TITLE_PATTERN.finditer(full_text)]
-    print(f"{len(titles)} titles detected")
+    logger.info("%s titles detected", len(titles))
 
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=settings.chunk_size,
@@ -102,8 +106,8 @@ def main():
             f.write(json.dumps(chunk, ensure_ascii=False) + "\n")
 
     sizes = [len(c["text"]) for c in chunks]
-    print(f"{len(chunks)} chunks")
-    print(f"size min {min(sizes)}, max {max(sizes)}, average {sum(sizes) // len(sizes)}")
+    logger.info("%s chunks written to %s", len(chunks), settings.chunks_file)
+    logger.info("size min %s, max %s, average %s", min(sizes), max(sizes), sum(sizes) // len(sizes))
 
 
 if __name__ == "__main__":

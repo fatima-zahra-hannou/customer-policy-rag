@@ -1,10 +1,17 @@
 """Central configuration for the RAG pipeline."""
 
+import logging
 from pathlib import Path
 
 from pydantic_settings import BaseSettings
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)-8s | %(name)-8s | %(message)s",
+    datefmt="%H:%M:%S",
+)
 
 
 class Settings(BaseSettings):
