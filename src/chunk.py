@@ -8,7 +8,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from config import settings
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("chunk")
 
 TITLE_PATTERN = re.compile(r"^(Article\s+\d+\s*[-–].+|\d+(?:\.\d+)+\s+.+)$", re.MULTILINE)
 

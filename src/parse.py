@@ -7,7 +7,7 @@ import pymupdf
 
 from config import settings
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("parse")
 
 
 def parse_pdf(pdf_path):

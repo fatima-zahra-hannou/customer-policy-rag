@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     min_chunk_length: int = 100
     body_marker: str = "Préambule"
 
+    embedding_model: str = "intfloat/multilingual-e5-large"
+    collection_name: str = "cgv"
+    distance_metric: str = "cosine"
+    batch_size: int = 32
+    device: str = "cpu"
+
     @property
     def raw_dir(self) -> Path:
         return self.data_dir / "raw"
@@ -39,6 +45,10 @@ class Settings(BaseSettings):
     @property
     def chunks_file(self) -> Path:
         return self.processed_dir / "chunks.jsonl"
+
+    @property
+    def chroma_dir(self) -> Path:
+        return self.data_dir / "chroma"
 
 
 settings = Settings()
