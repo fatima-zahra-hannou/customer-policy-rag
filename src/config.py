@@ -13,6 +13,9 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 
+for noisy in ("httpx", "httpx2", "httpcore", "huggingface_hub", "sentence_transformers"):
+    logging.getLogger(noisy).setLevel(logging.WARNING)
+
 
 class Settings(BaseSettings):
     """Pipeline settings, overridable through environment variables."""
@@ -29,6 +32,8 @@ class Settings(BaseSettings):
     distance_metric: str = "cosine"
     batch_size: int = 32
     device: str = "cpu"
+
+    top_k: int = 5
 
     @property
     def raw_dir(self) -> Path:
