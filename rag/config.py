@@ -38,6 +38,12 @@ class Settings(BaseSettings):
     reranker_model: str = "BAAI/bge-reranker-v2-m3"
     n_candidates: int = 20
 
+    llm_model: str = "gemini-3.1-flash-lite"
+    temperature: float = 0.0
+    max_context_chars: int = 250
+    llm_retries: int = 3
+    llm_delay_seconds: float = 4.5
+
     @property
     def raw_dir(self) -> Path:
         return self.data_dir / "raw"
@@ -57,6 +63,10 @@ class Settings(BaseSettings):
     @property
     def chroma_dir(self) -> Path:
         return self.data_dir / "chroma"
+
+    @property
+    def contextual_chunks_file(self) -> Path:
+        return self.processed_dir / "chunks_contextual.jsonl"
 
 
 settings = Settings()

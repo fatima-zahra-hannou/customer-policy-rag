@@ -12,8 +12,8 @@ logger = logging.getLogger("index")
 
 
 def load_chunks():
-    """Read the chunks produced by the chunking step."""
-    with settings.chunks_file.open(encoding="utf-8") as f:
+    """Read the contextualized chunks."""
+    with settings.contextual_chunks_file.open(encoding="utf-8") as f:
         return [json.loads(line) for line in f]
 
 
