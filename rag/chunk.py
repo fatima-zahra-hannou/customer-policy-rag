@@ -6,7 +6,7 @@ import re
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from config import settings
+from rag.config import settings
 
 logger = logging.getLogger("chunk")
 

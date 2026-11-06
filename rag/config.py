@@ -35,6 +35,9 @@ class Settings(BaseSettings):
 
     top_k: int = 5
 
+    reranker_model: str = "BAAI/bge-reranker-v2-m3"
+    n_candidates: int = 20
+
     @property
     def raw_dir(self) -> Path:
         return self.data_dir / "raw"

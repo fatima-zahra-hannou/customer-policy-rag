@@ -5,7 +5,7 @@ import logging
 
 import pymupdf
 
-from config import settings
+from rag.config import settings
 
 logger = logging.getLogger("parse")
 

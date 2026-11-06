@@ -6,7 +6,7 @@ import sys
 import chromadb
 from sentence_transformers import SentenceTransformer
 
-from config import settings
+from rag.config import settings
 
 logger = logging.getLogger("retrieve")
 
