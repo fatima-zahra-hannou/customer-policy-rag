@@ -2,14 +2,10 @@
 
 import json
 import logging
-import os
 import time
 
-from dotenv import load_dotenv
-from google import genai
-from google.genai import types
-
 from rag.config import settings
+from rag.llm import call_llm
 
 logger = logging.getLogger("contextualize")
 
@@ -31,34 +27,6 @@ Maximum 200 caractères. Réponds uniquement par cette phrase, sans préambule.
 """
 
 
-def get_client():
-    """Create the Gemini client from the API key in the environment."""
-    load_dotenv()
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError("GEMINI_API_KEY is not set")
-    return genai.Client(api_key=api_key)
-
-
-def call_llm(client, prompt):
-    """Call the LLM, retrying with exponential backoff on failure."""
-    for attempt in range(settings.llm_retries):
-        try:
-            response = client.models.generate_content(
-                model=settings.llm_model,
-                contents=prompt,
-                config=types.GenerateContentConfig(temperature=settings.temperature),
-            )
-            return response.text.strip()
-        except Exception as exc:
-            if attempt == settings.llm_retries - 1:
-                raise
-            wait = 2**attempt
-            logger.warning("LLM call failed (%s), retrying in %ss", exc, wait)
-            time.sleep(wait)
-    return None
-
-
 def build_sections(chunks):
     """Group chunk texts by section title."""
     sections = {}
@@ -75,12 +43,11 @@ def main():
     sections = build_sections(chunks)
     logger.info("%s chunks across %s sections", len(chunks), len(sections))
 
-    client = get_client()
     truncated = 0
 
     for i, chunk in enumerate(chunks, start=1):
         prompt = PROMPT.format(section=sections[chunk["section"]], chunk=chunk["text"])
-        context = call_llm(client, prompt)
+        context = call_llm(prompt)
 
         if len(context) > settings.max_context_chars:
             truncated += 1

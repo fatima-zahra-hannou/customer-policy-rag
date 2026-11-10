@@ -44,6 +44,8 @@ class Settings(BaseSettings):
     llm_retries: int = 3
     llm_delay_seconds: float = 4.5
 
+    abstention_threshold: float = 0.0
+
     @property
     def raw_dir(self) -> Path:
         return self.data_dir / "raw"
