@@ -93,7 +93,13 @@ def answer(question):
         "reason": None,
         "top_score": top_score,
         "sources": [
-            {"rank": c, "page": by_rank[c]["page"], "section": by_rank[c]["section"]} for c in valid
+            {
+                "rank": c,
+                "page": by_rank[c]["page"],
+                "section": by_rank[c]["section"],
+                "text": by_rank[c]["text"],
+            }
+            for c in valid
         ],
     }
 
