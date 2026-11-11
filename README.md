@@ -1,115 +1,123 @@
 # Customer Policy RAG
 
 ![Python](https://img.shields.io/badge/python-3.14-blue)
-![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-FF4B4B?logo=streamlit&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?logo=docker&logoColor=white)
+![ChromaDB](https://img.shields.io/badge/ChromaDB-vectorstore-6E56CF)
+![HuggingFace](https://img.shields.io/badge/HuggingFace-FFD21E?logo=huggingface&logoColor=black)
+![Gemini](https://img.shields.io/badge/Gemini_API-8E75B2?logo=googlegemini&logoColor=white)
+![pytest](https://img.shields.io/badge/pytest-0A9EDC?logo=pytest&logoColor=white)
+![uv](https://img.shields.io/badge/uv-package_manager-DE5FE9)
 
-Système RAG (Retrieval-Augmented Generation) construit de bout en bout sur les conditions générales de vente (CGV) de Sephora France, avec citation des sources et abstention quand la réponse n'est pas dans le corpus.
+End-to-end RAG (Retrieval-Augmented Generation) system built on Sephora France's terms of sale (CGV), answering customer questions with cited sources and abstaining when the answer is not in the corpus.
 
-Projet personnel réalisé pour maîtriser chaque brique d'un pipeline RAG en production : parsing, chunking, indexation vectorielle, retrieval dense + reranking, génération avec citations, évaluation quantitative.
+Personal project built to master every component of a production RAG pipeline: parsing, chunking, vector indexing, dense retrieval with reranking, generation with citations, and quantitative evaluation.
 
 ## Architecture
 
 ```mermaid
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff'}}}%%
 flowchart LR
-    A["PDF CGV Sephora"] --> B["Parse<br/>PyMuPDF"]
+    A["Sephora CGV PDF"] --> B["Parse<br/>PyMuPDF"]
     B --> C["Chunk<br/>langchain-text-splitters"]
     C --> D["Index<br/>e5-large embeddings<br/>ChromaDB"]
-    E["Question utilisateur"] --> F["Dense search<br/>top-5 candidats"]
+    E["User question"] --> F["Dense search<br/>top-5 candidates"]
     D --> F
     F --> G["Rerank<br/>bge-reranker-v2-m3"]
-    G --> H{"Score insuffisant ?"}
-    H -->|oui| I["Abstention"]
-    H -->|non| J["LLM generation<br/>Gemini + citations"]
-    J --> K{"LLM s'abstient ?"}
-    K -->|oui| I
-    K -->|non| L["Reponse + sources citees"]
+    G --> H{"Score too low?"}
+    H -->|yes| I["Abstain"]
+    H -->|no| J["LLM generation<br/>Gemini + citations"]
+    J --> K{"LLM abstains?"}
+    K -->|yes| I
+    K -->|no| L["Answer + cited sources"]
 ```
 
-Deux niveaux d'abstention : un seuil de score avant même d'appeler le LLM (filtre les cas où aucun passage pertinent n'existe), et une abstention décidée par le LLM lui-même via une sortie structurée (gère les cas où les passages existent mais ne répondent pas vraiment à la question).
+Two-level abstention: a pre-LLM score threshold (filters cases where no relevant passage exists), and an abstention decided by the LLM itself through structured output (handles cases where passages exist but do not actually answer the question).
 
-## Démo
+## Demo
 
-![Démo Streamlit](docs/demo.png)
+![Streamlit demo](docs/demo.png)
 
 ## Setup
 
-Prérequis : Python 3.14, [uv](https://docs.astral.sh/uv/), une clé API Gemini.
+Requirements: Python 3.14, [uv](https://docs.astral.sh/uv/), a Gemini API key.
 
 ```bash
 git clone https://github.com/fatima-zahra-hannou/customer-policy-rag.git
 cd customer-policy-rag
 uv sync
 
-echo "GEMINI_API_KEY=ta_clé" > .env
+echo "GEMINI_API_KEY=your_key" > .env
 
-# Construire l'index (une seule fois, ou après modification du PDF source)
+# Build the index (once, or after changing the source PDF)
 uv run python -m rag.parse
 uv run python -m rag.chunk
 uv run python -m rag.index
 ```
 
-Lancer l'API :
+Run the API:
 
 ```bash
 uv run uvicorn rag.api:app --reload
-# puis http://localhost:8000/docs pour tester interactivement
+# then http://localhost:8000/docs for interactive testing
 ```
 
-Lancer l'interface Streamlit :
+Run the Streamlit interface:
 
 ```bash
 uv run streamlit run app.py
 ```
 
-Lancer les tests unitaires :
+Run the unit tests:
 
 ```bash
 uv run pytest tests/ -v
 ```
 
-## Résultats mesurés
+## Measured results
 
 ### Corpus
 
-| Métrique | Valeur |
+| Metric | Value |
 |---|---|
 | Pages | 19 |
 | Chunks | 156 |
 
 ### Retrieval
 
-Mesuré sur un golden set de questions annotées avec la page et le passage attendus (k = 5).
+Measured on a golden set of questions annotated with the expected page and passage (k = 5).
 
 | Configuration | Recall@5 | MRR@5 |
 |---|---|---|
-| Dense search seul (e5-large) | 60 % | 0.471 |
-| Dense search + reranking (version retenue) | 80 % | 0.574 |
+| Dense search only (e5-large) | 60% | 0.471 |
+| Dense search + reranking (version used) | 80% | 0.574 |
 
-Les 4 questions restant en échec après reranking relèvent d'un écart de vocabulaire entre la question posée et les termes du document (pas d'un bug de pipeline).
+The 4 remaining failures after reranking stem from a vocabulary mismatch between the question and the document's wording, not a pipeline bug.
 
-### Génération (sur 24 questions : 20 in-corpus, 4 hors-corpus)
+### Generation (24 questions: 20 in-corpus, 4 out-of-corpus)
 
-Modèle retenu : `gemini-3.1-flash-lite` (un seul modèle du début à la fin de la mesure, condition nécessaire pour que les résultats soient comparables).
+Model used: `gemini-3.1-flash-lite` (single model throughout the measurement, a necessary condition for the results to be comparable).
 
-| Catégorie | Résultat |
+| Category | Result |
 |---|---|
-| Citation correcte | 16/20 (80 %) |
-| Mauvaise citation | 4/20 (20 %) |
-| Refus à tort (question in-corpus) | 0/20 |
-| Abstention correcte (question hors-corpus) | 3/4 |
+| Correct citation | 16/20 (80%) |
+| Wrong citation | 4/20 (20%) |
+| Wrongly refused (in-corpus question) | 0/20 |
+| Correctly abstained (out-of-corpus question) | 3/4 |
 
-## Décisions techniques et compromis
+## Technical decisions
 
-- **Embedding CPU-only (`intfloat/multilingual-e5-large`) et reranking (`BAAI/bge-reranker-v2-m3`) chargés en mémoire une seule fois au niveau module**, pas à chaque appel : coûteux à charger, bon marché à réutiliser.
-- **Seuil d'abstention pré-LLM fixé à 0** après avoir constaté qu'un seuil arbitraire (0.1, jamais validé empiriquement) bloquait des questions in-corpus valides. L'abstention finale repose sur le jugement du LLM via sortie structurée (`abstained: bool`), pas sur un seuil de score non calibré.
-- **Pas de framework comme LangChain pour le cœur du pipeline** (génération, retrieval) : appels directs au SDK `google-genai`. Choix délibéré pour garder un contrôle total et une compréhension complète de chaque étape, objectif premier de ce projet. `langchain-text-splitters` est conservé uniquement pour le chunking, où il apporte une vraie valeur sans réécrire un découpeur de texte récursif à la main.
-- **Device CPU forcé explicitement** pour les modèles d'embedding et de reranking, pour contourner une incompatibilité GPU locale (CUDA non supporté par le matériel de développement).
+- The embedding and reranking models are loaded once at startup, not on every question, to stay fast
+- The system refuses to answer when the documents do not contain the requested information: the language model itself detects this case, rather than a fixed rule based on a score
+- No framework like LangChain for the core steps (retrieval, generation): direct calls to the AI SDKs, to keep full control over what the system does
+- Computation runs on CPU (no GPU), due to a hardware constraint on the development machine
 
-## Limitations connues
+## Known limitations
 
-- **Contextual retrieval (technique Anthropic) testée puis abandonnée** : ajouter un résumé de contexte par chunk généré par LLM a fait régresser le recall (80 % → 75 %) et le MRR (0.574 → 0.524). Revert effectué et documenté par deux commits séparés (mesure, puis retour en arrière), plutôt que silencieusement supprimé.
-- **Mesure de faithfulness (RAGAS) abandonnée** : conflits de dépendances irrésolvables entre `langchain-text-splitters` et l'écosystème `langchain-google-vertexai` sur lequel repose RAGAS, puis blocages de crédits sur les fournisseurs LLM testés comme juge indépendant (OpenAI, Mistral). Reste un axe d'amélioration futur, avec un environnement Python isolé dédié à l'évaluation comme piste la plus propre.
+- A context-enrichment technique was tested to improve retrieval, but it lowered result quality: it was removed after measurement
+- An automated faithfulness measurement was attempted but abandoned due to dependency conflicts between libraries; remains a future improvement
 
-## Stack technique
+## Tech stack
 
 PyMuPDF, langchain-text-splitters, ChromaDB, sentence-transformers (e5-large, bge-reranker-v2-m3), google-genai (Gemini), FastAPI, Streamlit, pytest, Docker, uv.
