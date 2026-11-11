@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+data/chroma/
+.env
+.git/
+.pytest_cache/
+.ruff_cache/.agents/

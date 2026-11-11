@@ -18,7 +18,6 @@ def load_pipeline():
 load_pipeline()
 
 st.title("Assistant conseiller, conditions générales de vente")
-st.caption("Pose une question comme le ferait un client, le système répond avec ses sources.")
 
 question = st.text_input("Question du client")
 
