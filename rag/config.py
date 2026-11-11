@@ -41,7 +41,7 @@ class Settings(BaseSettings):
     llm_model: str = "gemini-3.1-flash-lite"
     temperature: float = 0.0
     max_context_chars: int = 250
-    llm_retries: int = 3
+    llm_retries: int = 6
     llm_delay_seconds: float = 4.5
 
     abstention_threshold: float = 0.0
