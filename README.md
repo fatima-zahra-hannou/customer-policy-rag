@@ -17,7 +17,7 @@ Personal project built to master every component of a production RAG pipeline: p
 ## Architecture
 
 ```mermaid
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#000000','secondaryColor':'#ffffff','tertiaryColor':'#ffffff'}}}%%
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#ffffff','primaryTextColor':'#000000','primaryBorderColor':'#000000','lineColor':'#2563EB','secondaryColor':'#ffffff','tertiaryColor':'#ffffff'}}}%%
 flowchart LR
     A["Sephora CGV PDF"] --> B["Parse<br/>PyMuPDF"]
     B --> C["Chunk<br/>langchain-text-splitters"]
