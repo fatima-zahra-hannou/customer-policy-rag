@@ -46,8 +46,6 @@ class Settings(BaseSettings):
 
     abstention_threshold: float = 0.0
 
-    judge_model: str = "gpt-4o-mini"
-
     @property
     def raw_dir(self) -> Path:
         return self.data_dir / "raw"
