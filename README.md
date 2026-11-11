@@ -1,5 +1,8 @@
 # Customer Policy RAG
 
+![Python](https://img.shields.io/badge/python-3.14-blue)
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
+
 Système RAG (Retrieval-Augmented Generation) construit de bout en bout sur les conditions générales de vente (CGV) de Sephora France, avec citation des sources et abstention quand la réponse n'est pas dans le corpus.
 
 Projet personnel réalisé pour maîtriser chaque brique d'un pipeline RAG en production : parsing, chunking, indexation vectorielle, retrieval dense + reranking, génération avec citations, évaluation quantitative.
@@ -8,18 +11,18 @@ Projet personnel réalisé pour maîtriser chaque brique d'un pipeline RAG en pr
 
 ```mermaid
 flowchart LR
-    A[PDF CGV Sephora] --> B[Parse\nPyMuPDF]
-    B --> C[Chunk\nlangchain-text-splitters]
-    C --> D[Index\ne5-large embeddings\nChromaDB]
-    E[Question utilisateur] --> F[Dense search\ntop-5 candidats]
+    A["PDF CGV Sephora"] --> B["Parse<br/>PyMuPDF"]
+    B --> C["Chunk<br/>langchain-text-splitters"]
+    C --> D["Index<br/>e5-large embeddings<br/>ChromaDB"]
+    E["Question utilisateur"] --> F["Dense search<br/>top-5 candidats"]
     D --> F
-    F --> G[Rerank\nbge-reranker-v2-m3]
-    G --> H{Score < seuil?}
-    H -->|oui| I[Abstention]
-    H -->|non| J[LLM generation\nGemini + citations]
-    J --> K{LLM s'abstient?}
+    F --> G["Rerank<br/>bge-reranker-v2-m3"]
+    G --> H{"Score insuffisant ?"}
+    H -->|oui| I["Abstention"]
+    H -->|non| J["LLM generation<br/>Gemini + citations"]
+    J --> K{"LLM s'abstient ?"}
     K -->|oui| I
-    K -->|non| L[Réponse + sources citées]
+    K -->|non| L["Reponse + sources citees"]
 ```
 
 Deux niveaux d'abstention : un seuil de score avant même d'appeler le LLM (filtre les cas où aucun passage pertinent n'existe), et une abstention décidée par le LLM lui-même via une sortie structurée (gère les cas où les passages existent mais ne répondent pas vraiment à la question).
