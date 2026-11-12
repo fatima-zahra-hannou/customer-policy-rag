@@ -9,6 +9,8 @@
 ![Gemini](https://img.shields.io/badge/Gemini_API-8E75B2?logo=googlegemini&logoColor=white)
 ![pytest](https://img.shields.io/badge/pytest-0A9EDC?logo=pytest&logoColor=white)
 ![uv](https://img.shields.io/badge/uv-package_manager-DE5FE9)
+![CI](https://github.com/fatima-zahra-hannou/customer-policy-rag/actions/workflows/ci.yml/badge.svg)
+![Ruff](https://img.shields.io/badge/style-ruff-261230?logo=ruff&logoColor=white)
 
 End-to-end RAG (Retrieval-Augmented Generation) system built on Sephora France's terms of sale (CGV), answering customer questions with cited sources and abstaining when the answer is not in the corpus.
 
